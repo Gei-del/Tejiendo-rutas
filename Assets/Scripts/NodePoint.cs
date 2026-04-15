@@ -44,6 +44,7 @@ public class NodePoint : MonoBehaviour
 
     private readonly List<NodePoint> _connectedNodes = new List<NodePoint>();
     private AudioSource _audio;
+    private MaterialPropertyBlock _propBlock;
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
     // ── lifecycle ──────────────────────────────────────────────────────────
@@ -51,6 +52,7 @@ public class NodePoint : MonoBehaviour
     private void Awake()
     {
         _audio = GetComponent<AudioSource>();
+        _propBlock = new MaterialPropertyBlock();
 
         if (nodeRenderer == null)
             nodeRenderer = GetComponentInChildren<Renderer>();
@@ -108,11 +110,10 @@ public class NodePoint : MonoBehaviour
     {
         if (nodeRenderer == null) return;
 
-        // Use MaterialPropertyBlock to avoid creating extra material instances
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-        nodeRenderer.GetPropertyBlock(block);
-        block.SetColor(EmissionColorId, color);
-        nodeRenderer.SetPropertyBlock(block);
+        // Reuse the cached MaterialPropertyBlock to avoid per-call heap allocation
+        nodeRenderer.GetPropertyBlock(_propBlock);
+        _propBlock.SetColor(EmissionColorId, color);
+        nodeRenderer.SetPropertyBlock(_propBlock);
     }
 
     // ── gizmos ─────────────────────────────────────────────────────────────

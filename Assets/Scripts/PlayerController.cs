@@ -39,6 +39,9 @@ public class PlayerController : MonoBehaviour
     private Vector3 _velocity;        // current physics velocity
     private Vector3 _moveDirection;   // smoothed horizontal movement
 
+    // Pre-allocated buffer for OverlapSphereNonAlloc to avoid per-frame heap allocation
+    private readonly Collider[] _overlapBuffer = new Collider[16];
+
     // ── lifecycle ──────────────────────────────────────────────────────────
 
     private void Awake()
@@ -151,11 +154,11 @@ public class PlayerController : MonoBehaviour
         NodePoint best = null;
         float bestDist = interactRadius * interactRadius;
 
-        // Use a non-allocating overlap to keep GC pressure low
-        Collider[] hits = Physics.OverlapSphere(transform.position, interactRadius);
-        foreach (Collider col in hits)
+        // Use the pre-allocated buffer to avoid per-call heap allocation
+        int count = Physics.OverlapSphereNonAlloc(transform.position, interactRadius, _overlapBuffer);
+        for (int i = 0; i < count; i++)
         {
-            NodePoint node = col.GetComponent<NodePoint>();
+            NodePoint node = _overlapBuffer[i].GetComponent<NodePoint>();
             if (node == null) continue;
 
             float dist = (node.transform.position - transform.position).sqrMagnitude;

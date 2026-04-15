@@ -170,8 +170,9 @@ public class CircuitManagerTests
             "At least one circuit event should fire for a closed triangle.");
 
         // Calling again should NOT re-fire (same circuit key already tracked)
+        int countBeforeSecondEval = eventCount;
         cm.EvaluateCircuits(segments);
-        Assert.AreEqual(eventCount, eventCount,
+        Assert.AreEqual(countBeforeSecondEval, eventCount,
             "Re-evaluating the same circuit should not fire a duplicate event.");
 
         Object.DestroyImmediate(a.gameObject);

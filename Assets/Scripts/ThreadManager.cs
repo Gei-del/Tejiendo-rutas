@@ -46,6 +46,9 @@ public class ThreadManager : MonoBehaviour
     private float _threadRemaining;
     private NodePoint _anchorNode;              // node the current thread started from
 
+    // Shared material for all thread line renderers (avoids per-segment material instances)
+    private Material _sharedLineMaterial;
+
     // All completed thread segments (persisted in the scene)
     private readonly List<ThreadSegment> _segments = new List<ThreadSegment>();
 
@@ -54,6 +57,8 @@ public class ThreadManager : MonoBehaviour
     private void Awake()
     {
         _threadRemaining = maxThreadLength;
+        _sharedLineMaterial = new Material(Shader.Find("Sprites/Default"));
+
         _previewLine = GetComponent<LineRenderer>();
         ConfigureLine(_previewLine, Color.white);
         _previewLine.enabled = false;
@@ -177,7 +182,7 @@ public class ThreadManager : MonoBehaviour
         lr.startWidth = lineStartWidth;
         lr.endWidth = lineEndWidth;
         lr.useWorldSpace = true;
-        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.sharedMaterial = _sharedLineMaterial;
         lr.startColor = color;
         lr.endColor = color * 0.7f;
     }
